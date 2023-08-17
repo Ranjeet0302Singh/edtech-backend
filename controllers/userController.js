@@ -4,7 +4,9 @@ import ErrorHandler from "../utils/errorHandler.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import { sendToken } from "../utils/sendToken.js";
 
-import crypto from 'crypto';
+import crypto from "crypto";
+
+import { Course } from "../models/Course.js";
 
 export const register = catchAsyncError(async (req, res, next) => {
   const { name, email, password } = req.body;
@@ -125,7 +127,10 @@ export const forgetPassword = catchAsyncError(async (req, res, next) => {
 export const resetPassword = catchAsyncError(async (req, res, next) => {
   const { token } = req.params;
 
-  const resetPasswordToken = crypto.createHash("sha256").update(token).digest("hex");
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
 
   const user = await User.findOne({
     resetPasswordToken,
@@ -142,14 +147,52 @@ export const resetPassword = catchAsyncError(async (req, res, next) => {
   if (!user)
     return next(new ErrorHandler("Token is invalid or has been expired"));
 
-    user.password=req.body.password;
-    user.resetPasswordExpire=undefined
-    user.resetPasswordToken=undefined
+  user.password = req.body.password;
+  user.resetPasswordExpire = undefined;
+  user.resetPasswordToken = undefined;
 
-    await user.save();
+  await user.save();
 
-    res.status(200).json({
-      success:true,
-      message:"Password Change Successfully"
-    })
+  res.status(200).json({
+    success: true,
+    message: "Password Change Successfully",
+  });
+});
+
+export const addToPlaylist = catchAsyncError(async (req, res, next) => {
+  const user = await User.findById(req.user._id);
+  const course = await Course.findById(req.body.id);
+  if (!course) return next(new ErrorHandler("Invalid Course Id", 404));
+
+  const itemExist = user.playlist.find((item) => {
+    if (item.course.toString() === course._id.toString()) return true;
+  });
+  if (itemExist) return next(new ErrorHandler("Item Already Exist", 409));
+
+  user.playlist.push({
+    course: course._id,
+    poster: course.poster.url,
+  });
+  await user.save();
+  res.status(200).json({
+    success: true,
+    message: "Added to playlist",
+  });
+});
+export const removeFromPlaylist = catchAsyncError(async (req, res, next) => {
+  const user = await User.findById(req.user._id);
+  const course = await Course.findById(req.query.id);
+  if (!course) return next(new ErrorHandler("Invalid Course Id", 404));
+
+  const newPlaylist = user.playlist.filter((item) => {
+    if (item.course.toString() !== course._id.toString()) return item;
+  });
+
+  user.playlist = newPlaylist;
+
+  await user.save();
+  res.status(200).json({
+    success: true,
+    message: "Remove from playlist",
+  });
 });
