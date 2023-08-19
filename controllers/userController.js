@@ -9,6 +9,7 @@ import crypto from "crypto";
 import { Course } from "../models/Course.js";
 import getDataUri from "../utils/dataUri.js";
 import cloudinary from "cloudinary";
+import { Stats } from "../models/Stats.js";
 
 export const register = catchAsyncError(async (req, res, next) => {
   const { name, email, password } = req.body;
