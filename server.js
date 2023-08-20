@@ -6,9 +6,6 @@ import nodeCron from "node-cron";
 import { Stats } from "./models/Stats.js";
 connectDB();
 
-app.get('/',(req,res)=>{
-  res.send("<h1> Server Working Fine</h1>")
-})
 
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLIENT_NAME,
