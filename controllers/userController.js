@@ -57,6 +57,9 @@ export const logout = catchAsyncError(async (req, res, next) => {
     .status(200)
     .cookie("token", null, {
       expires: new Date(Date.now()),
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
     })
     .json({
       success: true,
@@ -235,7 +238,7 @@ export const updateUserRole = catchAsyncError(async (req, res, next) => {
   await user.save();
   res.status(200).json({
     success: true,
-    message:"Role Updated Successfully",
+    message: "Role Updated Successfully",
     user,
   });
 });
@@ -243,28 +246,30 @@ export const deleteUser = catchAsyncError(async (req, res, next) => {
   const user = await User.findById(req.params.id);
 
   if (!user) return next(new ErrorHandler("User not found", 404));
- await cloudinary.v2.uploader.destroy(user.avatar.public_id)
+  await cloudinary.v2.uploader.destroy(user.avatar.public_id);
 
   await user.deleteOne();
   res.status(200).json({
     success: true,
-    message:"User Deleted Successfully",
+    message: "User Deleted Successfully",
     user,
   });
 });
 export const deleteMyProfile = catchAsyncError(async (req, res, next) => {
   const user = await User.findById(req.user._id);
 
- await cloudinary.v2.uploader.destroy(user.avatar.public_id)
+  await cloudinary.v2.uploader.destroy(user.avatar.public_id);
 
   await user.remove();
-  res.status(200).cookie("token",null,{expire:new Date(Date.now)}).json({
-    success: true,
-    message:"User Deleted Successfully",
-    user,
-  });
+  res
+    .status(200)
+    .cookie("token", null, { expire: new Date(Date.now) })
+    .json({
+      success: true,
+      message: "User Deleted Successfully",
+      user,
+    });
 });
-
 
 User.watch().on("change", async () => {
   const stats = await Stats.find({}).sort({ createdAt: "desc" }).limit(1);
