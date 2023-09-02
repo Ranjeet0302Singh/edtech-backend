@@ -16,10 +16,12 @@ export const register = catchAsyncError(async (req, res, next) => {
   const file = req.file;
 
   if (!name || !email || !password || !file)
-    return next(new ErrorHandler("Please Enter All Fields", 400));
+    return next(new ErrorHandler("Please enter all field", 400));
 
   let user = await User.findOne({ email });
+
   if (user) return next(new ErrorHandler("User Already Exist", 409));
+
   const fileUri = getDataUri(file);
   const mycloud = await cloudinary.v2.uploader.upload(fileUri.content);
 
@@ -33,7 +35,7 @@ export const register = catchAsyncError(async (req, res, next) => {
     },
   });
 
-  sendToken(res, user, "Register Successfully", 201);
+  sendToken(res, user, "Registered Successfully", 201);
 });
 export const login = catchAsyncError(async (req, res, next) => {
   const { email, password } = req.body;

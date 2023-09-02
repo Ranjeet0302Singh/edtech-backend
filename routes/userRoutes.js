@@ -34,7 +34,7 @@ router
 router.route("/forgetpassword").post(forgetPassword);
 router.route("/resetpassword/:token").put(resetPassword);
 router.route("/addtoplaylist").post(isAuthenticated, addToPlaylist);
-router.route("/removefromplaylist").post(isAuthenticated, removeFromPlaylist);
+router.route("/removefromplaylist").delete(isAuthenticated, removeFromPlaylist);
 
 router.route("/admin/users").get(isAuthenticated, authorizeAdmin, getAllUsers);
 router
